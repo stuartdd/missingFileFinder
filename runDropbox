@@ -1,0 +1,18 @@
+#!/bin/bash
+
+go build
+rCode=$?
+if [ $rCode -eq 0 ]; then
+    echo BUILD OK
+else
+    echo BUILD FAIL $rCode
+    exit
+fi
+
+./missingFileFinder source:/media/stuart/DATA/PiServerBackup/DropBox/Camera-Uploads dest:/media/stuart/DATA/PiServerBackup/shares out:results-dropbox.json -v -c ext:JPG ext:jpg ext:png ext:bmp ext:mp4 ext:gif 
+rCode=$?
+if [ $rCode -eq 0 ]; then
+    echo RUN OK
+else
+    echo RUN FAIL $rCode
+fi

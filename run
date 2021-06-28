@@ -1,0 +1,19 @@
+#!/bin/bash
+
+go build
+rCode=$?
+if [ $rCode -eq 0 ]; then
+    echo BUILD OK
+else
+    echo BUILD FAIL $rCode
+    exit
+fi
+
+./missingFileFinder source:testData/source dest:testData/dest -v -c out:results-run.json ext:JPG ext:jpg ext:png ext:bmp ext:mp4 ext:gif 'bash:no-match cp "$source" ./temp' bashfile:bash-run.sh 
+rCode=$?
+if [ $rCode -eq 0 ]; then
+    echo RUN OK - OUT $XX_OUT
+    
+else
+    echo RUN FAIL $rCode
+fi

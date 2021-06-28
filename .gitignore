@@ -1,0 +1,6 @@
+#ignore following file patterns:
+*.log
+*.txt
+missingFileFinder
+results-*
+bash-*
