@@ -9,7 +9,7 @@ else
     exit
 fi
 
-./missingFileFinder source:/media/stuart/DATA/PiServerBackup/DropBox/Camera-Uploads dest:/media/stuart/DATA/PiServerBackup/shares out:results-dropbox.json -v -c ext:JPG ext:jpg ext:png ext:bmp ext:mp4 ext:gif 
+./missingFileFinder source:/media/stuart/DATA/PiServerBackup/DropBox/Camera-Uploads dest:/media/stuart/DATA/PiServerBackup/shares out:results-dropbox.json -v -c ext:JPG ext:jpg ext:png ext:bmp ext:mp4 ext:gif 'bash:no-match cp "$source" ./dropbox-missing' bashfile:bash-dropbox.sh 
 rCode=$?
 if [ $rCode -eq 0 ]; then
     echo RUN OK
