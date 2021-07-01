@@ -67,6 +67,10 @@ func (r *FileData) GetFilePrefix() []uint8 {
 	return r.filePrefix
 }
 
+func (r *FileData) GetFilePrefixLen() int16 {
+	return r.filePrefixLen
+}
+
 func (r *FileData) IncSourceCount() {
 	r.sourceCount++
 }

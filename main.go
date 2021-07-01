@@ -163,12 +163,15 @@ func foundDestinationFile(path string, info os.FileInfo, err error) error {
 			if matchedSize {
 				matchFileData, foundInMap := sourceMap[matchSizeData.FileKey()]
 				if foundInMap {
-					currentMC := matchFileData.GetMatchCount()
-					if verbose {
-						fmt.Printf("ONLY:    Key:%s Path:%s\n", matchSizeData.FileKey(), path)
+					bytes, len := readFileStart(path, matchFileData.GetSize())
+					if compareButes(bytes, len, matchFileData) {
+						currentMC := matchFileData.GetMatchCount()
+						if verbose {
+							fmt.Printf("ONLY:    Key:%s Path:%s\n", matchSizeData.FileKey(), path)
+						}
+						matchFileData.SetMatchCount(currentMC + 1)
+						matchFileData.SetMatchedOnSizeOnly()
 					}
-					matchFileData.SetMatchCount(currentMC + 1)
-					matchFileData.SetMatchedOnSizeOnly()
 				} else {
 					fmt.Printf("ERROR:   Key:%s from SizeData not found in SourceMap for source:%s\n", matchSizeData.FileKey(), path)
 				}
@@ -176,6 +179,19 @@ func foundDestinationFile(path string, info os.FileInfo, err error) error {
 		}
 	}
 	return nil
+}
+
+func compareButes(buff []uint8, len int16, dataFile *data.FileData) bool {
+	if len != dataFile.GetFilePrefixLen() {
+		return false
+	}
+	var i int16 = 0
+	for i = 0; i < len; i++ {
+		if buff[i] != dataFile.GetFilePrefix()[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func foundSourceFile(path string, info os.FileInfo, err error) error {
