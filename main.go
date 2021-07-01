@@ -21,8 +21,10 @@ var verbose bool = false
 var compressFileKey bool = false
 
 var sourceMap = make(map[string]*data.FileData)
+var sizeMap = make(map[int64]*data.SizeData)
 var typeMap string = ""
-
+var fileStartLen int64 = 100
+var fileStartSeek int64 = 2000
 var filesInDestTotal = 0
 var filesInDestChecked = 0
 
@@ -58,6 +60,23 @@ func sortedKeys() []string {
 	return keys
 }
 
+func readFileStart(fileName string, size int64) ([]byte, int16) {
+	f, err := os.Open(fileName)
+	if err != nil {
+		log.Fatalf("unable to read file: %v", err)
+	}
+	defer f.Close()
+	if size > fileStartSeek {
+		f.Seek(fileStartSeek-fileStartLen, 0)
+	}
+	buf := make([]byte, fileStartLen)
+	bc, err1 := f.Read(buf)
+	if err1 != nil {
+		log.Fatalf("unable to read file: %v", err1)
+	}
+	return buf, int16(bc)
+}
+
 func writeBashFile() {
 	count := 0
 	f, err := os.Create(bashFile)
@@ -77,7 +96,6 @@ func writeBashFile() {
 	if verbose {
 		fmt.Printf("BASHOUT: File %s\n", bashFile)
 	}
-
 }
 
 func writeResults() {
@@ -93,7 +111,7 @@ func writeResults() {
 	for _, key := range sortedKeys() {
 		count++
 		value := sourceMap[key]
-		if value.MatchCount() > 0 {
+		if value.GetMatchCount() > 0 {
 			hitCount++
 		}
 		f.WriteString(value.String())
@@ -119,25 +137,42 @@ func foundDestinationFile(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 	filesInDestTotal++
-	fileData, reason, exclude := deriveFileData(path, info)
+	destFileData, reason, exclude := deriveFileData(path, info)
 	if exclude {
 		if verbose {
-			fmt.Printf("EXCLUDE: Key:%s Path:%s Reason:%s\n", fileData.Key(), path, reason)
+			fmt.Printf("EXCLUDE: Key:%s Path:%s Reason:%s\n", destFileData.GetKey(), path, reason)
 		}
 	} else {
 		filesInDestChecked++
-		fd, matchedName := sourceMap[fileData.Key()]
-		if verbose {
-			if matchedName {
-				fmt.Printf("MATCH:   Key:%s Path:%s\n", fileData.Key(), path)
-			} else {
-				fmt.Printf("FILE:    Key:%s Path:%s\n", fileData.Key(), path)
+		matchFileData, foundInMap := sourceMap[destFileData.GetKey()]
+		if foundInMap {
+			currentMC := matchFileData.GetMatchCount()
+			if verbose {
+				fmt.Printf("MATCH:   Key:%s Path:%s\n", matchFileData.GetKey(), path)
 			}
-		}
-		if matchedName {
-			fd.CountMatch()
-			fd.SetMatchedName(path)
-			fd.SetMatchedSize(info.Size())
+			matchFileData.SetMatchCount(currentMC + 1)
+			matchFileData.SetMatchedOnName()
+			if matchFileData.GetSize() == info.Size() {
+				if verbose {
+					fmt.Printf("SIZE:    Key:%s Path:%s\n", matchFileData.GetKey(), path)
+				}
+				matchFileData.SetMatchedOnSize()
+			}
+		} else {
+			matchSizeData, matchedSize := sizeMap[info.Size()]
+			if matchedSize {
+				matchFileData, foundInMap := sourceMap[matchSizeData.FileKey()]
+				if foundInMap {
+					currentMC := matchFileData.GetMatchCount()
+					if verbose {
+						fmt.Printf("ONLY:    Key:%s Path:%s\n", matchSizeData.FileKey(), path)
+					}
+					matchFileData.SetMatchCount(currentMC + 1)
+					matchFileData.SetMatchedOnSizeOnly()
+				} else {
+					fmt.Printf("ERROR:   Key:%s from SizeData not found in SourceMap for source:%s\n", matchSizeData.FileKey(), path)
+				}
+			}
 		}
 	}
 	return nil
@@ -157,12 +192,18 @@ func foundSourceFile(path string, info os.FileInfo, err error) error {
 		}
 		return nil
 	}
-	fd, matchName := sourceMap[fileData.Key()]
+	fd, matchName := sourceMap[fileData.GetKey()]
 	if matchName {
-		fd.CountSource()
+		fd.IncSourceCount()
 	} else {
-		sourceMap[fileData.Key()] = fileData
-		fileData.CountSource()
+		sourceMap[fileData.GetKey()] = fileData
+		fileData.IncSourceCount()
+		b, len := readFileStart(path, fileData.GetSize())
+		fileData.SetFilePrefix(b, len)
+	}
+	_, matchSd := sizeMap[info.Size()]
+	if !matchSd {
+		sizeMap[info.Size()] = data.NewSizeData(uint64(info.Size()), fileData.GetKey())
 	}
 	return nil
 }
