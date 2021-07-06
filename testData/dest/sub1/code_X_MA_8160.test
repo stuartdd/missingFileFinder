@@ -98,7 +98,7 @@ func writeBashFile() {
 	}
 }
 
-func writeresults() {
+func writeResults() {
 	count := 0
 	hitCount := 0
 	size := len(sourceMap)

@@ -74,8 +74,6 @@ func readFileStart(fileName string, size int64) ([]byte, int16) {
 	if err1 != nil {
 		log.Fatalf("unable to read file: %v", err1)
 	}
-
-	//	fmt.Print(string(buf))
 	return buf, int16(bc)
 }
 
@@ -96,7 +94,7 @@ func writeBashFile() {
 		}
 	}
 	if verbose {
-		fmt.Printf("BASHOUT: File %s\n", bashFile)
+		fmt.Printf("BASOUT: File %s\n", bashFile)
 	}
 }
 
@@ -149,18 +147,16 @@ func foundDestinationFile(path string, info os.FileInfo, err error) error {
 		matchFileData, foundInMap := sourceMap[destFileData.GetKey()]
 		if foundInMap {
 			currentMC := matchFileData.GetMatchCount()
+			if verbose {
+				fmt.Printf("MATCH:   Key:%s Path:%s\n", matchFileData.GetKey(), path)
+			}
 			matchFileData.SetMatchCount(currentMC + 1)
 			matchFileData.SetMatchedOnName()
-			matchFileData.AddDestName(path)
 			if matchFileData.GetSize() == info.Size() {
 				if verbose {
-					fmt.Printf("NAME+SI: Key:%s Path:%s\n", matchFileData.GetKey(), path)
+					fmt.Printf("SIZE:    Key:%s Path:%s\n", matchFileData.GetKey(), path)
 				}
 				matchFileData.SetMatchedOnSize()
-			} else {
-				if verbose {
-					fmt.Printf("NAME:    Key:%s Path:%s\n", matchFileData.GetKey(), path)
-				}
 			}
 		} else {
 			matchSizeData, matchedSize := sizeMap[info.Size()]
@@ -171,11 +167,10 @@ func foundDestinationFile(path string, info os.FileInfo, err error) error {
 					if compareButes(bytes, len, matchFileData) {
 						currentMC := matchFileData.GetMatchCount()
 						if verbose {
-							fmt.Printf("SIZE+BI: Key:%s Path:%s\n", matchSizeData.FileKey(), path)
+							fmt.Printf("ONLY:    Key:%s Path:%s\n", matchSizeData.FileKey(), path)
 						}
 						matchFileData.SetMatchCount(currentMC + 1)
-						matchFileData.SetMatchedOnSizeBytes()
-						matchFileData.AddDestName(path)
+						matchFileData.SetMatchedOnSizeOnly()
 					}
 				} else {
 					fmt.Printf("ERROR:   Key:%s from SizeData not found in SourceMap for source:%s\n", matchSizeData.FileKey(), path)
