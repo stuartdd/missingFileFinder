@@ -16,7 +16,12 @@
                 "-v",
                 "-c",
                 "out:results-code.json",
-                "ext:JPG", "ext:jpg", "ext:png", "ext:bmp", "ext:mp4",
+                "ext:JPG",
+                "ext:jpg",
+                "ext:png",
+                "ext:bmp",
+                "ext:mp4",
+                "ext:test",
                 "bash:name echo line:$line size:$size source:$source key:$key",
                 "bashfile:bash-code.sh"
             ]

@@ -11,7 +11,7 @@ const (
 	NONE uint16 = 0b0000000000000000
 	NAME uint16 = 0b0000000000000001
 	SIZE uint16 = 0b0000000000000010
-	ONLY uint16 = 0b0000000000000100
+	BYTE uint16 = 0b0000000000000100
 )
 
 type FileData struct {
@@ -91,8 +91,8 @@ func (r *FileData) SetMatchedOnSize() {
 	r.match = r.match | SIZE
 }
 
-func (r *FileData) SetMatchedOnSizeOnly() {
-	r.match = r.match | ONLY
+func (r *FileData) SetMatchedOnSizeBytes() {
+	r.match = r.match | BYTE
 }
 
 func (r *FileData) Match() string {
@@ -101,18 +101,11 @@ func (r *FileData) Match() string {
 		desc = desc + "name"
 	}
 	if (r.match & SIZE) == SIZE {
-		if desc != "" {
-			desc = desc + "+"
-		}
-		desc = desc + "size"
+		desc = desc + "+size+"
 	}
-	if (r.match & ONLY) == ONLY {
-		if desc != "" {
-			desc = desc + "+"
-		}
-		desc = desc + "bytes"
+	if (r.match & BYTE) == BYTE {
+		desc = desc + "-byte-"
 	}
-
 	if desc == "" {
 		return "no-match"
 	}
