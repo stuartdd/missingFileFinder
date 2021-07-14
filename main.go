@@ -176,10 +176,14 @@ func foundDestinationFile(path string, info os.FileInfo, err error) error {
 						matchFileData.SetMatchCount(currentMC + 1)
 						matchFileData.SetMatchedOnSizeBytes()
 						matchFileData.AddDestName(path)
+					} else {
+						fmt.Printf("SIZE-NB: Key:%s Path:%s\n", matchSizeData.FileKey(), path)
 					}
 				} else {
 					fmt.Printf("ERROR:   Key:%s from SizeData not found in SourceMap for source:%s\n", matchSizeData.FileKey(), path)
 				}
+			} else {
+				fmt.Printf("SIZE-NM: Size:%d Path:%s\n", info.Size(), path)
 			}
 		}
 	}
@@ -216,11 +220,13 @@ func foundSourceFile(path string, info os.FileInfo, err error) error {
 	fd, matchName := sourceMap[fileData.GetKey()]
 	if matchName {
 		fd.IncSourceCount()
+		fmt.Printf("INC-DUP: Key:%s Size:%d Dupe:%d Source file '%s'\n", fd.GetKey(), info.Size(), fd.GetSourceCount(), path)
 	} else {
 		sourceMap[fileData.GetKey()] = fileData
 		fileData.IncSourceCount()
 		b, len := readFileStart(path, fileData.GetSize())
 		fileData.SetFilePrefix(b, len)
+		fmt.Printf("INCLUDE: Key:%s Size:%d Source file '%s'\n", fileData.GetKey(), info.Size(), path)
 	}
 	_, matchSd := sizeMap[info.Size()]
 	if !matchSd {

@@ -13,6 +13,7 @@ fi
 rCode=$?
 if [ $rCode -eq 0 ]; then
     echo RUN OK
+    chmod +x bash-dropbox.sh
 else
     echo RUN FAIL $rCode
 fi

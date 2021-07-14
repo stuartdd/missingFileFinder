@@ -104,7 +104,7 @@ func (r *FileData) Match() string {
 		desc = desc + "+size+"
 	}
 	if (r.match & BYTE) == BYTE {
-		desc = desc + "-byte-"
+		desc = desc + "+byte+"
 	}
 	if desc == "" {
 		return "no-match"

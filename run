@@ -13,7 +13,7 @@ fi
 rCode=$?
 if [ $rCode -eq 0 ]; then
     echo RUN OK - OUT $XX_OUT
-    
+    chmod +x bash-run.sh
 else
     echo RUN FAIL $rCode
 fi

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+rm *.log
+rm bash-*
+rm bash.sh
+rm results-*
+cd dropbox-missing
+rm *.jpg
+rm *.mp4
+rm *.png
+rm *.bmp
+rm missingFileFinder
